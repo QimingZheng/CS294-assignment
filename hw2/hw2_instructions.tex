@@ -151,6 +151,18 @@ By \href{https://brilliant.org/wiki/linearity-of-expectation/}{\textcolor{blue}{
         p_\theta(\tau) = p_\theta(s_t, a_t)p_\theta(\tau / s_t, a_t | s_t, a_t)
     \end{align*}
     Please show equation \ref{independent} by using the law of iterated expectations, breaking $\mathbb{E}_{\tau \sim p_\theta(\tau)}$ by decoupling the state-action marginal from the rest of the trajectory.
+    
+    \textbf{Answer:}
+    
+    $\mathbb{E}_{\tau \sim p_\theta(\tau)} \left[\sum_{t=1}^T \nabla_\theta \log \pi_\theta(a_t|s_t) b(s_t)\right] = \sum_{\theta} \sum_{t=1}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t|s_T)b(s_t)p_{\theta}(\tau)$
+
+    $ = \sum_{\theta} \sum_{t=1}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t|s_T)b(s_t)p_{\theta}(s_t|a_t) p_{\theta}(\tau / s_t,a_t | s_t, a_t)$
+
+    $ = \sum_{t=1}^{T} \sum_{\theta} \nabla_{\theta} \log \pi_{\theta}(a_t|s_T)b(s_t)p_{\theta}(s_t|a_t) p_{\theta}(\tau / s_t,a_t | s_t, a_t)$
+
+    $ = \sum_{t=1}^{T} \mathbb{E}_{\tau \sim p_{\theta}(\tau)}[\nabla_\theta \log \pi_\theta(a_t|s_t) b(s_t)] $
+
+
 \item Alternatively, we can consider the structure of the MDP and express $p_\theta(\tau)$ as a product of the trajectory distribution up to $s_t$ (which we denote as $(s_{1:t}, a_{1:t-1})$) and the trajectory distribution after $s_t$ conditioned on the first part (which we denote as $(s_{t+1:T}, a_{t:T} | s_{1:t}, a_{1:t-1})$):
     \begin{align*}
         p_\theta(\tau) = p_\theta(s_{1:t}, a_{1:t-1}) p_\theta(s_{t+1:T}, a_{t:T} | s_{1:t}, a_{1:t-1})
@@ -159,7 +171,15 @@ By \href{https://brilliant.org/wiki/linearity-of-expectation/}{\textcolor{blue}{
 \item Explain why, for the inner expectation, conditioning on $(s_1, a_1, ..., a_{t^*-1}, s_{t^*})$ is equivalent to conditioning only on $s_{t^*}$.
 \item Please show equation \ref{independent} by using the law of iterated expectations, breaking $\mathbb{E}_{\tau \sim p_\theta(\tau)}$ by decoupling trajectory up to $s_t$ from the trajectory after $s_t$.
 \end{enumerate}
+
+\textbf{Answer}
+
+\begin{enumerate}
+    \item In Markov Decision Process, decisions (or actions) only depends on the latest state status.
 \end{enumerate}
+
+\end{enumerate}
+
 Since the policy gradient with respect to $\theta$ can be decoupled as a summation of terms over timesteps $t \in [1, T]$, because we have shown that the policy gradient is unbiased for each of these terms,
 the entire policy gradient is also unbiased with respect to a vector of state-dependent baselines over the timesteps: $[b(s_1), b(s_2), ... b(s_T)]$.
 
