@@ -40,11 +40,11 @@ def build_mlp(input_placeholder, output_size, scope, n_layers, size, activation=
         Hint: use tf.layers.dense    
     """
     with tf.variable_scope(scope):
-        layer = input_placeholder
+        h = input_placeholder
         for i in range(n_layers):
-            layer = tf.layers.dense(layer, size, activation = activation)
-        output_layer = tf.layers.dense(layer, output_size, activation = activation)
-        return output_layer
+            h = tf.layers.dense(h, size, activation=activation, name='h{}'.format(i + 1))
+        output_placeholder = tf.layers.dense(h, output_size, activation=output_activation, name='output')
+    return output_placeholder
 
 def pathlength(path):
     return len(path["reward"])
@@ -82,6 +82,7 @@ class Agent(object):
 
     def init_tf_sess(self):
         tf_config = tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1) 
+        tf_config.gpu_options.allow_growth = True
         self.sess = tf.Session(config=tf_config)
         self.sess.__enter__() # equivalent to `with self.sess:`
         tf.global_variables_initializer().run() #pylint: disable=E1101
@@ -215,7 +216,7 @@ class Agent(object):
         else:
             sy_mean, sy_logstd = policy_parameters
             sy = (sy_ac_na - sy_mean) / tf.exp(sy_logstd)
-            sy_neg_logprob_n = 0.5 * tf.reduce_sum(sy * sy, axis=1)
+            sy_logprob_n = 0.5 * tf.reduce_sum(sy * sy, axis=1)
         return sy_logprob_n
 
     def build_computation_graph(self):
