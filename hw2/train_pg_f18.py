@@ -12,6 +12,8 @@ import time
 import inspect
 from multiprocessing import Process
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 #============================================================================================#
 # Utilities
 #============================================================================================#
@@ -37,7 +39,7 @@ def build_mlp(input_placeholder, output_size, scope, n_layers, size, activation=
 
         Hint: use tf.layers.dense    
     """
-    with tf.variable_scope(scope) as scope:
+    with tf.variable_scope(scope):
         layer = input_placeholder
         for i in range(n_layers):
             layer = tf.layers.dense(layer, size, activation = activation)
@@ -398,7 +400,7 @@ class Agent(object):
             i = 0
             for r in re_n:
                 l = len(r)
-                q_n[i:i+1] = q_n[i]
+                q_n[i:i+l] = q_n[i]
                 i += l
         return q_n
 
@@ -466,7 +468,7 @@ class Agent(object):
         if self.normalize_advantages:
             # On the next line, implement a trick which is known empirically to reduce variance
             # in policy gradient methods: normalize adv_n to have mean zero and std=1.
-            adv_n = adv_n.mean() + (1.0)*(adv_n - adv_n.mean())/(adv_n.std() + 1e-8)
+            adv_n = 0.0 + (1.0)*(adv_n - adv_n.mean())/(adv_n.std() + 1e-8)
         return q_n, adv_n
 
     def update_parameters(self, ob_no, ac_na, q_n, adv_n):
