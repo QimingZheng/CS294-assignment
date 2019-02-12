@@ -302,8 +302,7 @@ class Agent(object):
             #====================================================================================#
             #                           ----------PROBLEM 3----------
             #====================================================================================#
-            raise NotImplementedError
-            ac = None # YOUR CODE HERE
+            ac = self.sess.run(self.sy_sampled_ac, feed_dict={self.sy_ob_no: ob.reshape(1,-1)})
             ac = ac[0]
             acs.append(ac)
             ob, rew, done, _ = env.step(ac)
@@ -385,11 +384,22 @@ class Agent(object):
             Store the Q-values for all timesteps and all trajectories in a variable 'q_n',
             like the 'ob_no' and 'ac_na' above. 
         """
-        # YOUR_CODE_HERE
-        if self.reward_to_go:
-            raise NotImplementedError
-        else:
-            raise NotImplementedError
+        num_path = len(re_n)
+        sum_of_path_lengths = sum(len(r) for r in re_n)
+        q_n = np.empty(sum_of_path_lengths)
+        i = 0
+        for r in re_n:
+            l = len(r)
+            q_n[i+l-1] = r[-1]
+            for j in range(l-2,-1,-1):
+                q_n[i+j] = r[j] + self.gamma * q_n[i+j+1]
+            i += l
+        if not self.reward_to_go:
+            i = 0
+            for r in re_n:
+                l = len(r)
+                q_n[i:i+1] = q_n[i]
+                i += l
         return q_n
 
     def compute_advantage(self, ob_no, q_n):
@@ -421,8 +431,8 @@ class Agent(object):
             # Hint #bl1: rescale the output from the nn_baseline to match the statistics
             # (mean and std) of the current batch of Q-values. (Goes with Hint
             # #bl2 in Agent.update_parameters.
-            raise NotImplementedError
-            b_n = None # YOUR CODE HERE
+            b_n = self.sess.run(self.baseline_prediction, feed_dict={self.sy_ob_no:ob_no})
+            b_n = normalize(b_n, q_n.mean(), q_n.std())
             adv_n = q_n - b_n
         else:
             adv_n = q_n.copy()
@@ -456,8 +466,7 @@ class Agent(object):
         if self.normalize_advantages:
             # On the next line, implement a trick which is known empirically to reduce variance
             # in policy gradient methods: normalize adv_n to have mean zero and std=1.
-            raise NotImplementedError
-            adv_n = None # YOUR_CODE_HERE
+            adv_n = adv_n.mean() + (1.0)*(adv_n - adv_n.mean())/(adv_n.std() + 1e-8)
         return q_n, adv_n
 
     def update_parameters(self, ob_no, ac_na, q_n, adv_n):
@@ -508,7 +517,11 @@ class Agent(object):
         # and after an update, and then log them below. 
 
         # YOUR_CODE_HERE
-        raise NotImplementedError
+        for i in range(128):
+            self.sess.run(self.update_op, feed_dict={
+                self.sy_ob_no:ob_no,
+                self.sy_ac_na:ac_na,
+                self.sy_adv_n:adv_n})
 
 
 def train_PG(
